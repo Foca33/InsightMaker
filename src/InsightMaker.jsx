@@ -6,7 +6,6 @@ export default function InsightMaker() {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🎯 NUEVOS contadores
   const [insightCount, setInsightCount] = useState(0);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [ningunoCount, setNingunoCount] = useState(0);
@@ -15,10 +14,10 @@ export default function InsightMaker() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const API_KEY = "AIzaSyCWGiraec0HuMZ-wIjOcrWOXZQGNFoDtZw"; // Recuerda luego cambiarla por la buena
+      const API_KEY = "AIzaSyCWGiraec0HuMZ-wIjOcrWOXZQGNFoDtZw"; // reemplazar luego con la nueva key real
 
       const res = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`,
         {
           contents: [
             {
@@ -35,7 +34,7 @@ export default function InsightMaker() {
       const aiResponse = res.data.candidates[0].content.parts[0].text;
       setResponse(aiResponse);
 
-      // 🎯 Analizar respuesta y aumentar contadores
+      // Actualizar contadores basado en la respuesta
       const lowerResponse = aiResponse.toLowerCase();
       if (lowerResponse.includes("insight")) {
         setInsightCount(prev => prev + 1);
@@ -45,7 +44,7 @@ export default function InsightMaker() {
         setNingunoCount(prev => prev + 1);
       }
 
-      console.log("Simulando guardar en base de datos:", {
+      console.log("Guardando:", {
         texto: input,
         respuesta: aiResponse,
         timestamp: new Date()
@@ -59,40 +58,62 @@ export default function InsightMaker() {
   };
 
   return (
-    <div className="p-4 sm:p-8 max-w-md sm:max-w-2xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Insight Maker</h1>
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-6 sm:p-10">
+      <div className="max-w-2xl mx-auto bg-white p-6 sm:p-10 rounded-lg shadow-2xl">
 
-      <textarea
-        className="border p-3 w-full h-32 mb-4 resize-none rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        placeholder="Escribe aquí tu insight de la visita médica..."
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      ></textarea>
+        {/* Título principal */}
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 text-purple-700">
+          Insight Maker
+        </h1>
 
-      <button
-        className="w-full sm:w-auto bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-all"
-        onClick={handleSubmit}
-        disabled={loading}
-      >
-        {loading ? "Analizando..." : "Enviar"}
-      </button>
-
-      {response && (
-        <div className="mt-8 p-4 border rounded bg-gray-100">
-          <h2 className="font-semibold mb-2 text-lg">Resultado:</h2>
-          <p className="whitespace-pre-line">{response}</p>
-
-          {/* 🎯 MOSTRAR CONTADORES */}
-          <div className="mt-6 text-center">
-            <h3 className="text-xl font-semibold mb-2">📊 Resultados acumulados:</h3>
-            <div className="flex justify-around text-lg">
-              <div>🧠 Insights: {insightCount}</div>
-              <div>💬 Feedbacks: {feedbackCount}</div>
-              <div>❓ Ninguno: {ningunoCount}</div>
+        {/* Dashboard contadores */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center">📊 Resultados acumulados</h2>
+          <div className="flex justify-around text-center text-lg font-medium">
+            <div className="bg-purple-100 p-4 rounded-lg w-24">
+              <div className="text-2xl">🧠</div>
+              <div className="text-purple-700">{insightCount}</div>
+              <div className="text-gray-500 text-sm">Insights</div>
+            </div>
+            <div className="bg-blue-100 p-4 rounded-lg w-24">
+              <div className="text-2xl">💬</div>
+              <div className="text-blue-700">{feedbackCount}</div>
+              <div className="text-gray-500 text-sm">Feedbacks</div>
+            </div>
+            <div className="bg-gray-100 p-4 rounded-lg w-24">
+              <div className="text-2xl">❓</div>
+              <div className="text-gray-700">{ningunoCount}</div>
+              <div className="text-gray-500 text-sm">Ninguno</div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Input usuario */}
+        <textarea
+          className="border-2 border-purple-200 w-full h-32 rounded-md p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+          placeholder="Escribe aquí el insight o feedback de la visita médica..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        ></textarea>
+
+        {/* Botón enviar */}
+        <button
+          className="w-full bg-purple-600 text-white py-3 rounded-md font-semibold hover:bg-purple-700 transition-all mb-8"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "Analizando..." : "Enviar"}
+        </button>
+
+        {/* Resultado */}
+        {response && (
+          <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
+            <h3 className="text-lg font-semibold text-purple-700 mb-2">Resultado del análisis:</h3>
+            <p className="whitespace-pre-line text-gray-700">{response}</p>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
