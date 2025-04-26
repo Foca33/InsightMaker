@@ -14,24 +14,33 @@ export default function InsightMaker() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const API_KEY = "AIzaSyDoqvEZWjtcRkGnD4HDDhAoVYX_nVtaJ5g";
+      const API_KEY = "AIzaSyDoqvEZWjtcRkGnD4HDDhAoVYX_nVtaJ5g"; // <-- REEMPLAZA AQUÍ tu API Key real
+      const PROJECT_ID = "insightmaker-458003"; // Tu Project ID
+
+      const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.0-pro:predict`;
 
       const res = await axios.post(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=${API_KEY}`,
+        endpoint,
         {
-          contents: [
+          instances: [
             {
-              parts: [
-                {
-                  text: `Clasifica este texto como Insight, Feedback o Ninguno. Explica tu clasificación: ${input}`
-                }
-              ]
+              content: `Clasifica este texto como Insight, Feedback o Ninguno. Explica tu clasificación: ${input}`
             }
-          ]
+          ],
+          parameters: {
+            temperature: 0.2,
+            maxOutputTokens: 512
+          }
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${API_KEY}`
+          }
         }
       );
 
-      const aiResponse = res.data.candidates[0].content.parts[0].text;
+      const aiResponse = res.data.predictions[0].content;
       setResponse(aiResponse);
 
       // Actualizar contadores basado en la respuesta
