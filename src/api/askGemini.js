@@ -12,34 +12,59 @@ export default async function handler(req, res) {
   }
 
   try {
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+
     const client = new PredictionServiceClient({
       projectId: process.env.GOOGLE_PROJECT_ID,
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        private_key: privateKey,
       },
+      apiEndpoint: 'us-central1-aiplatform.googleapis.com',
     });
 
-    const endpoint = `projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.0-pro`;
+    const projectId = process.env.GOOGLE_PROJECT_ID;
+    const location = 'us-central1';
+    const publisher = 'google';
+    const model = 'gemini-1.0-pro';
+
+    const endpoint = `projects/${projectId}/locations/${location}/publishers/${publisher}/models/${model}`;
+
+    const instance = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Clasifica este texto como Insight, Feedback o Ninguno. Explica tu clasificación: ${input}`,
+            },
+          ],
+        },
+      ],
+    };
+
+    const parameters = {
+      temperature: 0.2,
+      maxOutputTokens: 512,
+      topK: 1,
+      topP: 0.8,
+    };
 
     const [response] = await client.predict({
       endpoint,
-      instances: [
-        {
-          content: `Clasifica este texto como Insight, Feedback o Ninguno. Explica tu clasificación: ${input}`,
-        },
-      ],
-      parameters: {
-        temperature: 0.2,
-        maxOutputTokens: 512,
-      },
+      instances: [instance],
+      parameters,
     });
 
-    const prediction = response.predictions?.[0]?.content || "No se recibió respuesta.";
+    const prediction = response.predictions?.[0]?.structValue?.fields?.candidates?.listValue?.values?.[0]?.structValue?.fields?.content?.structValue?.fields?.parts?.listValue?.values?.[0]?.structValue?.fields?.text?.stringValue;
 
-    res.status(200).json({ content: prediction });
+    res.status(200).json({ prediction: prediction || response.predictions });
   } catch (error) {
-    console.error("Error en Vertex AI Predict:", error);
-    res.status(500).json({ error: error.message || "Error desconocido en Vertex AI" });
+    console.error('Error during Vertex AI prediction:', error);
+    res.status(500).json({
+      error: 'Failed to get prediction',
+      message: error.message,
+      details: error.details || error.stack,
+    });
   }
 }
