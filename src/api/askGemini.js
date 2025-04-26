@@ -12,14 +12,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const API_KEY = process.env.GEMINI_API_KEY; // ahora leeremos tu API Key desde env vars
+    const API_KEY = process.env.GEMINI_API_KEY;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     const payload = {
       contents: [
         {
-          role: "user",
           parts: [
             {
               text: `Clasifica este texto como Insight, Feedback o Ninguno. Explica tu clasificación: ${input}`,
