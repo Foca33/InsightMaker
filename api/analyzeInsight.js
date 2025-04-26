@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     const API_KEY = process.env.GEMINI_API_KEY;
     const { input } = req.body;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${API_KEY}`;
 
     const payload = {
       contents: [
@@ -19,8 +19,7 @@ export default async function handler(req, res) {
     };
 
     const headers = {
-      "Content-Type": "application/json",
-      "x-goog-api-key": API_KEY
+      "Content-Type": "application/json"
     };
 
     const response = await axios.post(url, payload, { headers });
