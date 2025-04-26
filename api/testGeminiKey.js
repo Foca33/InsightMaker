@@ -4,12 +4,11 @@ export default async function handler(req, res) {
   try {
     const API_KEY = process.env.GEMINI_API_KEY;
 
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
 
     const payload = {
       contents: [
         {
-          role: "user",
           parts: [{ text: "¿Qué es la inteligencia artificial?" }]
         }
       ]
@@ -17,8 +16,8 @@ export default async function handler(req, res) {
 
     const response = await axios.post(url, payload, {
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY}`
+        "Content-Type": "application/json"
+        // 🚫 NO Authorization Header
       }
     });
 
