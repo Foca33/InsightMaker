@@ -1,5 +1,4 @@
 import { PredictionServiceClient } from "@google-cloud/aiplatform";
-import path from "path";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,15 +12,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const keyFile = path.join(process.cwd(), "src", "credentials", "service-account.json");
+    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
 
     const client = new PredictionServiceClient({
-      keyFile,
-      projectId: process.env.GOOGLE_PROJECT_ID,
+      credentials: serviceAccount,
+      projectId: serviceAccount.project_id,
       apiEndpoint: 'us-central1-aiplatform.googleapis.com',
     });
 
-    const projectId = process.env.GOOGLE_PROJECT_ID;
+    const projectId = serviceAccount.project_id;
     const location = 'us-central1';
     const publisher = 'google';
     const model = 'gemini-1.0-pro';
