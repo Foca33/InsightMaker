@@ -1,4 +1,5 @@
 import { PredictionServiceClient } from "@google-cloud/aiplatform";
+import path from "path";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -12,14 +13,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+    const keyFile = path.join(process.cwd(), "src", "credentials", "service-account.json");
 
     const client = new PredictionServiceClient({
+      keyFile,
       projectId: process.env.GOOGLE_PROJECT_ID,
-      credentials: {
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: privateKey,
-      },
       apiEndpoint: 'us-central1-aiplatform.googleapis.com',
     });
 
