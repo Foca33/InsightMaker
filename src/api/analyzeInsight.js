@@ -5,11 +5,12 @@ export default async function handler(req, res) {
     const API_KEY = process.env.GEMINI_API_KEY;
     const { input } = req.body;
 
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     const payload = {
       contents: [
         {
+          role: "user",
           parts: [
             { text: input }
           ]
