@@ -5,6 +5,7 @@ export default function InsightMaker() {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const [insightCount, setInsightCount] = useState(0);
   const [feedbackCount, setFeedbackCount] = useState(0);
@@ -13,6 +14,7 @@ export default function InsightMaker() {
   const handleSubmit = async () => {
     if (!input.trim()) return;
     setLoading(true);
+    setError(false);
     try {
       const res = await axios.post("/api/analyzeInsight", { input });
 
@@ -30,7 +32,14 @@ export default function InsightMaker() {
 
     } catch (error) {
       console.error(error);
-      setResponse("Error procesando el análisis: " + (error.response?.data?.error || error.message));
+      setError(true);
+      setResponse(
+        `Error procesando el análisis: ${
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message
+        }`
+      );
     }
     setLoading(false);
   };
@@ -85,9 +94,17 @@ export default function InsightMaker() {
 
         {/* Resultado */}
         {response && (
-          <div className="p-4 border border-purple-200 rounded-lg bg-purple-50 whitespace-pre-line">
-            <h3 className="text-lg font-semibold text-purple-700 mb-2">Resultado del análisis:</h3>
-            <p className="text-gray-700">{response}</p>
+          <div
+            className={`p-4 border rounded-lg ${
+              error
+                ? "border-red-300 bg-red-50 text-red-700"
+                : "border-green-300 bg-green-50 text-green-700"
+            } whitespace-pre-line`}
+          >
+            <h3 className="text-lg font-semibold mb-2">
+              {error ? "❌ Error" : "✅ Resultado del análisis"}
+            </h3>
+            <p>{response}</p>
           </div>
         )}
 
