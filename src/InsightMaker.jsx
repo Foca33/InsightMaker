@@ -12,7 +12,7 @@ export default function InsightMaker() {
     if (!input.trim()) return; // No dejar enviar vacío
     setLoading(true);
     try {
-      const API_KEY = "AIzaSyCWGiraec0HuMZ-wIjOcrWOXZQGNFoDtZw";
+      const API_KEY = "AIzaSyA9FQNSLLs3P2D8LsKgnJ00MA1uiaRRPi4";
 
       const res = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
