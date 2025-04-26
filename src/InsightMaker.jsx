@@ -34,10 +34,12 @@ export default function InsightMaker() {
       console.error(error);
       setError(true);
       setResponse(
-        `Error procesando el análisis: ${
-          error.response?.data?.error ||
-          error.response?.data?.message ||
-          error.message
+        `Error procesando el análisis:\n${
+          typeof error.response?.data === "object"
+            ? JSON.stringify(error.response.data, null, 2)
+            : error.response?.data?.error ||
+              error.response?.data?.message ||
+              error.message
         }`
       );
     }
@@ -95,11 +97,12 @@ export default function InsightMaker() {
         {/* Resultado */}
         {response && (
           <div
-            className={`p-4 border rounded-lg ${
+            className={`p-4 border rounded-lg whitespace-pre-line overflow-x-auto ${
               error
                 ? "border-red-300 bg-red-50 text-red-700"
                 : "border-green-300 bg-green-50 text-green-700"
-            } whitespace-pre-line`}
+            }`}
+            style={{ maxHeight: "400px" }}
           >
             <h3 className="text-lg font-semibold mb-2">
               {error ? "❌ Error" : "✅ Resultado del análisis"}
