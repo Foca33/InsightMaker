@@ -43,19 +43,26 @@ export default async function handler(req, res) {
     const parameters = {
       temperature: 0.2,
       maxOutputTokens: 512,
-      topK: 1,
       topP: 0.8,
+      topK: 40,
     };
 
-    const [response] = await client.predict({
-      endpoint,
+    const request = {
+      endpoint: endpoint,
       instances: [instance],
-      parameters,
-    });
+      parameters: parameters,
+    };
 
-    const prediction = response.predictions?.[0]?.structValue?.fields?.candidates?.listValue?.values?.[0]?.structValue?.fields?.content?.structValue?.fields?.parts?.listValue?.values?.[0]?.structValue?.fields?.text?.stringValue;
+    const [response] = await client.predict(request);
 
-    res.status(200).json({ prediction: prediction || response.predictions });
+    const predictions = response.predictions;
+    const firstPrediction = predictions?.[0]?.structValue?.fields;
+    const candidates = firstPrediction?.candidates?.listValue?.values;
+    const firstCandidateContent = candidates?.[0]?.structValue?.fields?.content?.structValue?.fields;
+    const parts = firstCandidateContent?.parts?.listValue?.values;
+    const generatedText = parts?.[0]?.structValue?.fields?.text?.stringValue;
+
+    res.status(200).json({ prediction: generatedText || "No se pudo generar texto." });
   } catch (error) {
     console.error('Error during Vertex AI prediction:', error);
     res.status(500).json({
