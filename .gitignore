@@ -1,1 +1,3 @@
 *.json
+# Ignorar las credenciales de Google Cloud
+src/credentials/service-account.json
