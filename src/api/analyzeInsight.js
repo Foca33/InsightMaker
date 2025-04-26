@@ -11,9 +11,7 @@ export default async function handler(req, res) {
       contents: [
         {
           parts: [
-            {
-              text: input
-            }
+            { text: input }
           ]
         }
       ]
@@ -24,10 +22,11 @@ export default async function handler(req, res) {
     const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     res.status(200).json({ result: generatedText || "No se pudo generar respuesta." });
+
   } catch (error) {
     console.error('Error en analyzeInsight:', error.response?.data || error.message);
     res.status(500).json({ 
-      error: 'Error en prueba de API Key',
+      error: 'Error procesando el análisis',
       message: error.message,
       details: error.response?.data || error.stack,
     });
