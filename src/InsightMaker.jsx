@@ -1,5 +1,3 @@
-// src/InsightMaker.jsx
-
 import { useState } from "react";
 import axios from "axios";
 
@@ -8,11 +6,16 @@ export default function InsightMaker() {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 🎯 NUEVOS contadores
+  const [insightCount, setInsightCount] = useState(0);
+  const [feedbackCount, setFeedbackCount] = useState(0);
+  const [ningunoCount, setNingunoCount] = useState(0);
+
   const handleSubmit = async () => {
-    if (!input.trim()) return; // No dejar enviar vacío
+    if (!input.trim()) return;
     setLoading(true);
     try {
-      const API_KEY = "AIzaSyA9FQNSLLs3P2D8LsKgnJ00MA1uiaRRPi4";
+      const API_KEY = "AIzaSyCWGiraec0HuMZ-wIjOcrWOXZQGNFoDtZw"; // Recuerda luego cambiarla por la buena
 
       const res = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
@@ -31,6 +34,16 @@ export default function InsightMaker() {
 
       const aiResponse = res.data.candidates[0].content.parts[0].text;
       setResponse(aiResponse);
+
+      // 🎯 Analizar respuesta y aumentar contadores
+      const lowerResponse = aiResponse.toLowerCase();
+      if (lowerResponse.includes("insight")) {
+        setInsightCount(prev => prev + 1);
+      } else if (lowerResponse.includes("feedback")) {
+        setFeedbackCount(prev => prev + 1);
+      } else {
+        setNingunoCount(prev => prev + 1);
+      }
 
       console.log("Simulando guardar en base de datos:", {
         texto: input,
@@ -68,6 +81,16 @@ export default function InsightMaker() {
         <div className="mt-8 p-4 border rounded bg-gray-100">
           <h2 className="font-semibold mb-2 text-lg">Resultado:</h2>
           <p className="whitespace-pre-line">{response}</p>
+
+          {/* 🎯 MOSTRAR CONTADORES */}
+          <div className="mt-6 text-center">
+            <h3 className="text-xl font-semibold mb-2">📊 Resultados acumulados:</h3>
+            <div className="flex justify-around text-lg">
+              <div>🧠 Insights: {insightCount}</div>
+              <div>💬 Feedbacks: {feedbackCount}</div>
+              <div>❓ Ninguno: {ningunoCount}</div>
+            </div>
+          </div>
         </div>
       )}
     </div>
