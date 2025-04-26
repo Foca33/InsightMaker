@@ -1,4 +1,4 @@
-import { PredictionServiceClient } from "@google-cloud/aiplatform";
+import axios from "axios";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -12,22 +12,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    const API_KEY = process.env.GEMINI_API_KEY; // ahora leeremos tu API Key desde env vars
 
-    const client = new PredictionServiceClient({
-      credentials: serviceAccount,
-      projectId: serviceAccount.project_id,
-      apiEndpoint: 'us-central1-aiplatform.googleapis.com',
-    });
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
-    const projectId = serviceAccount.project_id;
-    const location = 'us-central1';
-    const publisher = 'google';
-    const model = 'gemini-1.0-pro';
-
-    const endpoint = `projects/${projectId}/locations/${location}/publishers/${publisher}/models/${model}`;
-
-    const instance = {
+    const payload = {
       contents: [
         {
           role: "user",
@@ -40,35 +29,17 @@ export default async function handler(req, res) {
       ],
     };
 
-    const parameters = {
-      temperature: 0.2,
-      maxOutputTokens: 512,
-      topP: 0.8,
-      topK: 40,
-    };
+    const response = await axios.post(url, payload);
 
-    const request = {
-      endpoint: endpoint,
-      instances: [instance],
-      parameters: parameters,
-    };
+    const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    const [response] = await client.predict(request);
-
-    const predictions = response.predictions;
-    const firstPrediction = predictions?.[0]?.structValue?.fields;
-    const candidates = firstPrediction?.candidates?.listValue?.values;
-    const firstCandidateContent = candidates?.[0]?.structValue?.fields?.content?.structValue?.fields;
-    const parts = firstCandidateContent?.parts?.listValue?.values;
-    const generatedText = parts?.[0]?.structValue?.fields?.text?.stringValue;
-
-    res.status(200).json({ prediction: generatedText || "No se pudo generar texto." });
+    res.status(200).json({ prediction: generatedText || "No se pudo generar respuesta." });
   } catch (error) {
-    console.error('Error during Vertex AI prediction:', error);
+    console.error('Error al llamar a Gemini API:', error.response?.data || error.message);
     res.status(500).json({
-      error: 'Failed to get prediction',
+      error: 'Error al generar la predicción',
       message: error.message,
-      details: error.details || error.stack,
+      details: error.response?.data || error.stack,
     });
   }
 }
