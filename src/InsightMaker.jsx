@@ -14,36 +14,11 @@ export default function InsightMaker() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const API_KEY = "AIzaSyDoqvEZWjtcRkGnD4HDDhAoVYX_nVtaJ5g"; // <-- REEMPLAZA AQUÍ tu API Key real
-      const PROJECT_ID = "insightmaker-458003"; // Tu Project ID
+      const res = await axios.post("/api/analyzeInsight", { input });
 
-      const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.0-pro:predict`;
-
-      const res = await axios.post(
-        endpoint,
-        {
-          instances: [
-            {
-              content: `Clasifica este texto como Insight, Feedback o Ninguno. Explica tu clasificación: ${input}`
-            }
-          ],
-          parameters: {
-            temperature: 0.2,
-            maxOutputTokens: 512
-          }
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_KEY}`
-          }
-        }
-      );
-
-      const aiResponse = res.data.predictions[0].content;
+      const aiResponse = res.data.result;
       setResponse(aiResponse);
 
-      // Actualizar contadores basado en la respuesta
       const lowerResponse = aiResponse.toLowerCase();
       if (lowerResponse.includes("insight")) {
         setInsightCount(prev => prev + 1);
@@ -53,15 +28,9 @@ export default function InsightMaker() {
         setNingunoCount(prev => prev + 1);
       }
 
-      console.log("Guardando:", {
-        texto: input,
-        respuesta: aiResponse,
-        timestamp: new Date()
-      });
-
     } catch (error) {
       console.error(error);
-      setResponse("Error procesando la solicitud: " + (error.response?.data?.error?.message || error.message));
+      setResponse("Error procesando el análisis: " + (error.response?.data?.error || error.message));
     }
     setLoading(false);
   };
@@ -116,9 +85,9 @@ export default function InsightMaker() {
 
         {/* Resultado */}
         {response && (
-          <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
+          <div className="p-4 border border-purple-200 rounded-lg bg-purple-50 whitespace-pre-line">
             <h3 className="text-lg font-semibold text-purple-700 mb-2">Resultado del análisis:</h3>
-            <p className="whitespace-pre-line text-gray-700">{response}</p>
+            <p className="text-gray-700">{response}</p>
           </div>
         )}
 
