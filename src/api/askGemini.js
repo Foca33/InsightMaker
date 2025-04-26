@@ -12,19 +12,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const project = process.env.GOOGLE_PROJECT_ID;
-    const location = "us-central1";
-    const model = "publishers/google/models/gemini-1.0-pro";
-
     const client = new PredictionServiceClient({
-      projectId: project,
+      projectId: process.env.GOOGLE_PROJECT_ID,
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
         private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       },
     });
 
-    const endpoint = `projects/${project}/locations/${location}/publishers/google/models/gemini-1.0-pro`;
+    const endpoint = `projects/${process.env.GOOGLE_PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.0-pro`;
 
     const [response] = await client.predict({
       endpoint,
