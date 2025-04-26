@@ -14,7 +14,7 @@ export default function InsightMaker() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const API_KEY = "AIzaSyA9FQNSLLs3P2D8LsKgnJ00MA1uiaRRPi4";
+      const API_KEY = "AIzaSyDoqvEZWjtcRkGnD4HDDhAoVYX_nVtaJ5g";
 
       const res = await axios.post(
         `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=${API_KEY}`,
