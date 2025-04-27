@@ -5,6 +5,9 @@ export default function InsightMaker() {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
+  const [insights, setInsights] = useState(0);
+  const [feedbacks, setFeedbacks] = useState(0);
+  const [ningunos, setNingunos] = useState(0);
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
@@ -17,7 +20,15 @@ export default function InsightMaker() {
       });
 
       const data = await res.json();
-      setResponse(data.result || "No se pudo procesar la respuesta.");
+      setResponse(data.result || "No se pudo procesar el análisis.");
+
+      if (data.result.includes("✅ Clasificación: Insight")) {
+        setInsights(prev => prev + 1);
+      } else if (data.result.includes("✅ Clasificación: Feedback")) {
+        setFeedbacks(prev => prev + 1);
+      } else {
+        setNingunos(prev => prev + 1);
+      }
     } catch (error) {
       console.error(error);
       setResponse("Error procesando el análisis.");
@@ -27,12 +38,30 @@ export default function InsightMaker() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-6 sm:p-10">
-      <div className="max-w-2xl mx-auto bg-white p-6 sm:p-10 rounded-lg shadow-2xl">
+      <div className="max-w-3xl mx-auto bg-white p-6 sm:p-10 rounded-lg shadow-2xl">
 
-        {/* Título */}
         <h1 className="text-4xl font-bold text-center mb-8 text-purple-700">
           Insight Maker
         </h1>
+
+        {/* Contadores */}
+        <div className="flex justify-around text-center mb-8">
+          <div className="w-24 p-4 bg-purple-100 rounded-lg">
+            🧠
+            <div className="text-2xl">{insights}</div>
+            <div className="text-sm">Insights</div>
+          </div>
+          <div className="w-24 p-4 bg-blue-100 rounded-lg">
+            💬
+            <div className="text-2xl">{feedbacks}</div>
+            <div className="text-sm">Feedbacks</div>
+          </div>
+          <div className="w-24 p-4 bg-gray-100 rounded-lg">
+            ❓
+            <div className="text-2xl">{ningunos}</div>
+            <div className="text-sm">Ninguno</div>
+          </div>
+        </div>
 
         {/* Input */}
         <textarea
@@ -53,14 +82,13 @@ export default function InsightMaker() {
 
         {/* Resultado */}
         {response && (
-          <div className="p-6 border border-purple-200 rounded-lg bg-purple-50">
-            <h3 className="text-xl font-bold text-purple-700 mb-4 text-center">Resultado del análisis:</h3>
+          <div className="p-6 border border-purple-300 rounded-lg bg-purple-50 space-y-4">
+            <h3 className="text-2xl font-bold text-purple-700 text-center">Resultado del análisis:</h3>
             <pre className="whitespace-pre-wrap text-gray-700 font-sans text-base leading-relaxed">
               {response}
             </pre>
           </div>
         )}
-
       </div>
     </div>
   );
