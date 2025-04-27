@@ -1,41 +1,49 @@
-// src/pages/api/analyzeInsight.js
-import axios from "axios";
-import { db } from "@/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import axios from 'axios';
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method Not Allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método no permitido' });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  const { input } = req.body;
 
+  if (!apiKey) {
+    console.error("GEMINI_API_KEY no configurada.");
+    return res.status(500).json({ error: 'API Key no configurada en servidor' });
+  }
+
+  const userPrompt = req.body.input || "No se recibió input.";
   const modelName = 'gemini-1.5-pro-latest';
   const apiVersion = 'v1beta';
+
   const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent?key=${apiKey}`;
 
-  const primedPrompt = `
-Eres un experto en análisis de información de visitas médicas para fuerzas de ventas farmacéuticas.
+  const prompt = `
+Eres un experto analista de insights para fuerza de ventas médicas. 
+Cuando recibas un texto, debes clasificarlo SOLO en una de estas 3 categorías:
 
-Clasifica el texto como Insight, Feedback o Ninguno. Justifica tu clasificación y, si es Insight, sugiere 3 soluciones prácticas.
+✅ Clasificación: Insight
+✅ Clasificación: Feedback
+✅ Clasificación: Ninguno
 
-Formato:
+Y luego, debes explicar:
 
-✅ Clasificación: [Insight / Feedback / Ninguno]
+- Descubrimiento o Motivación:
+- Relevancia:
 
-📝 Explicación:
-- Descubrimiento o Motivación: [respuesta]
-- Relevancia: [respuesta]
+Si es un Insight, da 3 recomendaciones de solución.
 
-💡 Recomendaciones (si es Insight):
-- 1. [Idea 1]
-- 2. [Idea 2]
-- 3. [Idea 3]
+Responde SIEMPRE en este formato exacto:
 
-Texto:
+✅ Clasificación: (Insight / Feedback / Ninguno)
+- Descubrimiento o Motivación: ...
+- Relevancia: ...
+- 1. Recomendación uno
+- 2. Recomendación dos
+- 3. Recomendación tres
 
-"${input}"
+Texto a analizar:
+"""${userPrompt}"""
 `;
 
   const payload = {
@@ -43,34 +51,32 @@ Texto:
       {
         role: "user",
         parts: [
-          { text: primedPrompt }
+          { text: prompt }
         ]
       }
-    ]
+    ],
   };
 
   try {
     const response = await axios.post(url, payload, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
 
-    const result = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo generar respuesta.";
+    // EXTRAEMOS el texto generado de forma segura
+    const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    // Guardar en Firebase
-    await addDoc(collection(db, "insights"), {
-      input,
-      result,
-      timestamp: new Date()
-    });
+    if (!generatedText) {
+      throw new Error("No se pudo extraer texto de la respuesta.");
+    }
 
-    res.status(200).json({ result });
+    res.status(200).json({ result: generatedText });
 
   } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(error.response?.status || 500).json({
+    console.error("Error en analyzeInsight:", error.response?.data || error.message);
+    res.status(500).json({
       error: "Error procesando el análisis",
       message: error.message,
-      details: error.response?.data?.error || error.message
+      details: error.response?.data || error.stack,
     });
   }
 }
