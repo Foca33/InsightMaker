@@ -17,8 +17,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt vacío." });
     }
 
-    // 🔥 Volvemos a usar gemini-pro en v1beta
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    // 👇 CAMBIO AQUÍ: Modelo actualizado
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${API_KEY}`;
 
     const systemPrompt = `
 Eres una IA de Sanofi. Analiza la siguiente declaración:
