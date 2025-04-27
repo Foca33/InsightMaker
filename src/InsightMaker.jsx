@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { db } from "../firebase"; // Asegúrate que el import esté correcto
-import { addDoc, collection } from "firebase/firestore";
+import { db } from "../firebase"; // asegúrate que esté bien tu import
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { motion } from "framer-motion";
 
 export default function InsightMaker() {
@@ -36,7 +36,7 @@ export default function InsightMaker() {
             role: "user",
             parts: [
               {
-                text: `Clasifica el siguiente texto como Insight, Feedback o Ninguno. Luego explica claramente: 
+                text: `Clasifica el siguiente texto como Insight, Feedback o Ninguno. Luego explica claramente:
 - ¿Cuál es el descubrimiento o motivación principal?
 - ¿Por qué es relevante?
 - Si es un insight, proporciona 3 recomendaciones de acción.
@@ -60,13 +60,11 @@ Texto: ${input}`
 
       setResponse(result);
 
-      // Clasificación automática simple
       const lower = result.toLowerCase();
       if (lower.includes("insight")) setInsightCount((prev) => prev + 1);
       else if (lower.includes("feedback")) setFeedbackCount((prev) => prev + 1);
       else setNingunoCount((prev) => prev + 1);
 
-      // Guardar en Firestore
       await addDoc(collection(db, "insights"), {
         input,
         analysis: result,
@@ -85,7 +83,7 @@ Texto: ${input}`
 
   const handleToggleDashboard = async () => {
     try {
-      const querySnapshot = await db.collection("insights").get();
+      const querySnapshot = await getDocs(collection(db, "insights"));
       const data = querySnapshot.docs.map((doc) => doc.data());
       setDashboardData(data);
       setShowDashboard(!showDashboard);
@@ -189,8 +187,8 @@ Texto: ${input}`
         )}
       </div>
 
-      {/* Versión Badge */}
-      <div className="fixed bottom-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full opacity-70 shadow-md">
+      {/* Badge de Versión */}
+      <div className="fixed bottom-1 right-2 text-gray-400 text-[10px]">
         V:1
       </div>
 
