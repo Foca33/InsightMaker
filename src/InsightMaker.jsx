@@ -1,125 +1,109 @@
-// src/InsightMaker.jsx
-import { useState } from "react";
+import { useState, Fragment } from "react";
+import { db } from "../firebase";
+import { addDoc, collection } from "firebase/firestore";
 import axios from "axios";
-import { db } from "./firebase"; 
-import { collection, addDoc } from "firebase/firestore";
+
+// Nuevo componente para formatear la respuesta
+function FormattedResponse({ text }) {
+  const sections = text.split(/\n\n/).filter((section) => section.trim() !== "");
+
+  const icons = [
+    "🏷️", // Clasificación
+    "🧠", // Descubrimiento / Motivación
+    "🎯", // Relevancia para Sanofi
+    "🚀", // Acciones específicas
+    "🔎", // Análisis general
+  ];
+
+  return (
+    <div className="space-y-8">
+      {sections.map((section, index) => (
+        <div
+          key={index}
+          className="p-6 rounded-2xl bg-white/50 backdrop-blur-md border border-purple-200 hover:shadow-2xl transition-shadow duration-300"
+        >
+          <div className="flex items-start gap-4">
+            <div className="text-3xl">{icons[index] || "📝"}</div>
+            <p className="text-gray-800 whitespace-pre-line leading-relaxed text-md">
+              {section
+                .replace("## ", "")
+                .replace("**1. Clasificación:**", "**Clasificación:**")
+                .replace("**2. Descubrimiento/Motivación:**", "**Descubrimiento / Motivación:**")
+                .replace("**3. Relevancia para Sanofi:**", "**Relevancia para Sanofi:**")
+                .replace("**4. Acciones Específicas (Si es un Insight):**", "**Acciones Específicas:**")}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function InsightMaker() {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [insightCount, setInsightCount] = useState(0);
-  const [feedbackCount, setFeedbackCount] = useState(0);
-  const [ningunoCount, setNingunoCount] = useState(0);
-
-  const [showDashboard, setShowDashboard] = useState(false);
-
   const handleSubmit = async () => {
     if (!input.trim()) return;
     setLoading(true);
-    setResponse("");
 
     try {
       const res = await axios.post("/api/askGemini", { prompt: input });
+      const result = res.data.result;
+      setResponse(result);
 
-      const aiResponse = res.data?.result;
-
-      if (!aiResponse) {
-        console.error("❌ No se obtuvo respuesta válida del servidor:", res.data);
-        setResponse("❌ Error procesando el análisis: Respuesta vacía o incorrecta.");
-      } else {
-        setResponse(aiResponse);
-
-        // Guardar en Firestore
-        await addDoc(collection(db, "insights"), {
-          texto: input,
-          respuesta: aiResponse,
-          timestamp: new Date()
-        });
-
-        // Actualizar contadores
-        const lower = aiResponse.toLowerCase();
-        if (lower.includes("clasificación: insight")) {
-          setInsightCount((prev) => prev + 1);
-        } else if (lower.includes("clasificación: feedback")) {
-          setFeedbackCount((prev) => prev + 1);
-        } else {
-          setNingunoCount((prev) => prev + 1);
-        }
-      }
+      await addDoc(collection(db, "análisis"), {
+        texto: input,
+        resultado: result,
+        timestamp: new Date(),
+      });
     } catch (error) {
-      console.error("❌ Error en axios.post('/api/askGemini'):", error.response?.data || error.message);
+      console.error("❌ Error en análisis:", error.response?.data || error.message);
       setResponse("❌ Error procesando el análisis. Ver consola para detalles.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-6 sm:p-10 relative">
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-xl relative">
+      <div className="max-w-3xl mx-auto bg-white/70 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-purple-200">
 
-        {/* Versión */}
-        <div className="absolute top-2 right-4 text-xs text-gray-400 select-none">V:1</div>
-
-        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 text-purple-700 animate-pulse">
-          Insight Maker
+        {/* Título principal */}
+        <h1 className="text-4xl font-extrabold text-center mb-8 text-purple-700">
+          Insight Maker 🚀
         </h1>
 
-        <div className="flex justify-around mb-6">
-          <div className="text-center">
-            <div className="text-2xl">🧠</div>
-            <div className="text-purple-700 font-semibold">{insightCount}</div>
-            <div className="text-gray-500 text-sm">Insights</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl">💬</div>
-            <div className="text-blue-600 font-semibold">{feedbackCount}</div>
-            <div className="text-gray-500 text-sm">Feedbacks</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl">❓</div>
-            <div className="text-gray-600 font-semibold">{ningunoCount}</div>
-            <div className="text-gray-500 text-sm">Ninguno</div>
-          </div>
-        </div>
-
+        {/* Área de texto */}
         <textarea
-          className="border-2 border-purple-200 w-full h-32 rounded-md p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
-          placeholder="Escribe aquí el insight o feedback de la visita médica..."
+          className="w-full h-36 p-4 rounded-xl border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700 placeholder-gray-400 resize-none mb-6"
+          placeholder="Describe el insight o feedback del médico..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-        />
+        ></textarea>
 
+        {/* Botón */}
         <button
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-md transition-all mb-6"
           onClick={handleSubmit}
           disabled={loading}
+          className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white font-semibold py-3 rounded-xl shadow-lg transition-all mb-10"
         >
-          {loading ? "Analizando..." : "Enviar"}
+          {loading ? "Analizando..." : "Analizar Insight"}
         </button>
 
+        {/* Resultado */}
         {response && (
-          <div className="p-6 bg-gray-100 border border-gray-300 rounded-lg space-y-4 animate-fade-in">
-            <h2 className="text-xl font-bold text-purple-700 mb-2">Resultado del análisis:</h2>
-            <div className="whitespace-pre-line text-gray-700 leading-relaxed">
-              {response}
-            </div>
-
-            <button
-              className="mt-6 w-full border border-purple-500 text-purple-700 py-2 rounded-md hover:bg-purple-50 transition-all"
-              onClick={() => setShowDashboard(!showDashboard)}
-            >
-              {showDashboard ? "🔽 Ocultar Dashboard" : "📊 Ver Dashboard"}
-            </button>
-
-            {showDashboard && (
-              <div className="mt-6 text-center text-gray-400 italic">
-                (El dashboard se mostrará aquí en próximas versiones.)
-              </div>
-            )}
+          <div>
+            <h2 className="text-2xl font-semibold text-purple-700 mb-6 text-center">Resultado del análisis</h2>
+            <FormattedResponse text={response} />
           </div>
         )}
+      </div>
+
+      {/* Versión */}
+      <div className="absolute bottom-4 right-6 text-xs text-gray-400">
+        V:2
       </div>
     </div>
   );
