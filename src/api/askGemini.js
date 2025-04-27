@@ -17,7 +17,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt vacío." });
     }
 
-    const model = "gemini-1.5-pro-latest";
+    // ⚡ Aquí usamos gemini-pro normal
+    const model = "gemini-pro";
     const apiVersion = "v1beta";
     const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${API_KEY}`;
 
@@ -26,22 +27,18 @@ export default async function handler(req, res) {
         parts: [
           {
             text: `
-Eres una IA especializada en análisis de insights médicos de Sanofi. 
-Debes hacer lo siguiente:
+Eres una IA de Sanofi que analiza inputs de representantes médicos.
 
-1. Clasificar el texto proporcionado como:
-- Insight
-- Feedback
-- Ninguno
+Debes:
 
+1. Clasificar el texto como Insight, Feedback o Ninguno.
 2. Explicar:
-- ¿Cuál es el descubrimiento o motivación principal?
-- ¿Cuál es la relevancia para Sanofi?
+   - Descubrimiento o Motivación
+   - Relevancia para Sanofi
+3. Si es Insight:
+   - Proponer 3 acciones concretas para Sanofi.
 
-3. Si es clasificado como Insight:
-- Proponer 3 recomendaciones prácticas de acción que Sanofi pueda implementar.
-
-Responde de forma estructurada, clara y separando cada sección visualmente.
+Usa una estructura clara, separada por secciones. Sé breve y profesional.
 `
           }
         ]
