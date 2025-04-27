@@ -17,30 +17,31 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt vacío." });
     }
 
-    // 👇 CAMBIO AQUÍ: Modelo actualizado
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     const systemPrompt = `
-Eres una IA de Sanofi. Analiza la siguiente declaración:
+Eres un analizador experto de textos para Sanofi.
 
-"${prompt}"
+Dado el siguiente texto: "${prompt}"
 
-1. Clasifícala como Insight, Feedback o Ninguno.
-2. Explica el descubrimiento o motivación detrás de la declaración.
-3. Justifica la relevancia para Sanofi.
-4. Si es un Insight, propone 3 acciones específicas que Sanofi podría implementar.
+Clasifica y responde con la siguiente estructura (en lenguaje sencillo y profesional):
 
-Entrega tu respuesta organizada, clara y profesional.
-Usa viñetas, títulos y separación visual entre secciones.
+1. Clasificación: (Escribe Insight, Feedback o Ninguno).
+2. Explicación breve: (Por qué es Insight, Feedback o Ninguno).
+3. Acciones o Recomendaciones:
+    - Si es Insight: Propón 3 acciones concretas que Sanofi podría tomar.
+    - Si es Feedback: Da 1 recomendación para aprovecharlo.
+    - Si es Ninguno: Explica brevemente por qué no es relevante.
+
+Solo responde el contenido, sin títulos adicionales, sin numeración extra, sin explicaciones redundantes.
+Formato claro, ordenado, directo.
 `;
 
     const payload = {
       contents: [
         {
           role: "user",
-          parts: [
-            { text: systemPrompt }
-          ]
+          parts: [{ text: systemPrompt }]
         }
       ]
     };
