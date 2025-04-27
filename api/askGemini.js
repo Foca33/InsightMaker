@@ -1,4 +1,4 @@
-// src/api/askGemini.js
+// api/askGemini.js
 import axios from "axios";
 
 export default async function handler(req, res) {
