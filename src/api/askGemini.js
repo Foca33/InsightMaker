@@ -17,16 +17,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt vacío." });
     }
 
-    const model = "gemini-1.5-pro-latest";
-    const apiVersion = "v1beta";
+    const model = "gemini-1.5-pro-latest"; // Correcto: 1.5 Pro Latest
+    const apiVersion = "v1beta";            // Correcto: v1beta
     const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${API_KEY}`;
 
     const payload = {
       contents: [
         {
           role: "user",
-          parts: [{
-            text: `
+          parts: [
+            {
+              text: `
 Eres una IA experta en análisis de insights médicos de Sanofi. Tu tarea es:
 
 1. **Clasificación:** ¿Es Insight, Feedback o Ninguno?
@@ -34,9 +35,12 @@ Eres una IA experta en análisis de insights médicos de Sanofi. Tu tarea es:
 3. **Relevancia:** ¿Por qué es importante para Sanofi o el negocio?
 4. **Si es Insight:** Proponer 3 recomendaciones de acción para aprovecharlo.
 
-Análisis del texto: """${prompt}"""
-            `
-          }]
+Analiza con alta calidad y responde claro y estructurado.
+
+Texto a analizar: """${prompt}"""
+              `
+            }
+          ]
         }
       ]
     };
