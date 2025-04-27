@@ -17,10 +17,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt vacío." });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    // 👇 CAMBIO AQUÍ: Modelo actualizado
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${API_KEY}`;
 
     const systemPrompt = `
-Eres un analizador experto de textos para Sanofi.
+Eres un representante de ventas y visitador médico experto de Sanofi.
 
 Dado el siguiente texto: "${prompt}"
 
@@ -41,7 +42,9 @@ Formato claro, ordenado, directo.
       contents: [
         {
           role: "user",
-          parts: [{ text: systemPrompt }]
+          parts: [
+            { text: systemPrompt }
+          ]
         }
       ]
     };
