@@ -17,46 +17,32 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt vacío." });
     }
 
-    // ⚡ Aquí usamos gemini-pro normal
-    const model = "gemini-pro";
-    const apiVersion = "v1beta";
-    const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${API_KEY}`;
+    // 🔥 Volvemos a usar gemini-pro en v1beta
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+
+    const systemPrompt = `
+Eres una IA de Sanofi. Analiza la siguiente declaración:
+
+"${prompt}"
+
+1. Clasifícala como Insight, Feedback o Ninguno.
+2. Explica el descubrimiento o motivación detrás de la declaración.
+3. Justifica la relevancia para Sanofi.
+4. Si es un Insight, propone 3 acciones específicas que Sanofi podría implementar.
+
+Entrega tu respuesta organizada, clara y profesional.
+Usa viñetas, títulos y separación visual entre secciones.
+`;
 
     const payload = {
-      system_instruction: {
-        parts: [
-          {
-            text: `
-Eres una IA de Sanofi que analiza inputs de representantes médicos.
-
-Debes:
-
-1. Clasificar el texto como Insight, Feedback o Ninguno.
-2. Explicar:
-   - Descubrimiento o Motivación
-   - Relevancia para Sanofi
-3. Si es Insight:
-   - Proponer 3 acciones concretas para Sanofi.
-
-Usa una estructura clara, separada por secciones. Sé breve y profesional.
-`
-          }
-        ]
-      },
       contents: [
         {
           role: "user",
           parts: [
-            { text: prompt }
+            { text: systemPrompt }
           ]
         }
-      ],
-      generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 1024,
-        topP: 1,
-        topK: 40
-      }
+      ]
     };
 
     const response = await axios.post(url, payload, {
